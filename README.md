@@ -1,6 +1,6 @@
 # Vendor
 
-> Vendor is a block based library for simplifying the In-App Purchase process from Apple.  A small and simple singleton that that doesn't stray to far from StoreKit itself, just wraps everything up in a nice Block based package. From getting products with identifiers, to validating receipts straight from your phone.  It also includes an optional Shared Secret param for the latest update, to help prevent bad people from doing bad things.
+> Vendor is a block based library for simplifying the In-App Purchase process from Apple.  A small and simple singleton that doesn't stray to far from StoreKit itself, just wraps everything up in a nice Block based package. From getting products with identifiers, to validating receipts straight from your phone.  It also includes an optional Shared Secret param for the latest update, to help prevent bad people from doing bad things.
 
 ## Usage Example:
 ```objectivec
