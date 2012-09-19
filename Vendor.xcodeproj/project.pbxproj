@@ -16,6 +16,8 @@
 		080F3D32160A204B00A80964 /* Default.png in Resources */ = {isa = PBXBuildFile; fileRef = 080F3D31160A204B00A80964 /* Default.png */; };
 		080F3D34160A204B00A80964 /* Default@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 080F3D33160A204B00A80964 /* Default@2x.png */; };
 		080F3D36160A204B00A80964 /* Default-568h@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 080F3D35160A204B00A80964 /* Default-568h@2x.png */; };
+		080F3D41160A209000A80964 /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 080F3D40160A209000A80964 /* StoreKit.framework */; };
+		080F3D44160A20C200A80964 /* Vendor.m in Sources */ = {isa = PBXBuildFile; fileRef = 080F3D43160A20C200A80964 /* Vendor.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -32,6 +34,9 @@
 		080F3D31160A204B00A80964 /* Default.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Default.png; sourceTree = "<group>"; };
 		080F3D33160A204B00A80964 /* Default@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default@2x.png"; sourceTree = "<group>"; };
 		080F3D35160A204B00A80964 /* Default-568h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-568h@2x.png"; sourceTree = "<group>"; };
+		080F3D40160A209000A80964 /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
+		080F3D42160A20C200A80964 /* Vendor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Vendor.h; sourceTree = "<group>"; };
+		080F3D43160A20C200A80964 /* Vendor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Vendor.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -39,6 +44,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				080F3D41160A209000A80964 /* StoreKit.framework in Frameworks */,
 				080F3D20160A204B00A80964 /* UIKit.framework in Frameworks */,
 				080F3D22160A204B00A80964 /* Foundation.framework in Frameworks */,
 				080F3D24160A204B00A80964 /* CoreGraphics.framework in Frameworks */,
@@ -68,6 +74,7 @@
 		080F3D1E160A204B00A80964 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				080F3D40160A209000A80964 /* StoreKit.framework */,
 				080F3D1F160A204B00A80964 /* UIKit.framework */,
 				080F3D21160A204B00A80964 /* Foundation.framework */,
 				080F3D23160A204B00A80964 /* CoreGraphics.framework */,
@@ -78,6 +85,7 @@
 		080F3D25160A204B00A80964 /* Vendor */ = {
 			isa = PBXGroup;
 			children = (
+				080F3D3C160A206F00A80964 /* Classes */,
 				080F3D2E160A204B00A80964 /* VAppDelegate.h */,
 				080F3D2F160A204B00A80964 /* VAppDelegate.m */,
 				080F3D26160A204B00A80964 /* Supporting Files */,
@@ -97,6 +105,15 @@
 				080F3D35160A204B00A80964 /* Default-568h@2x.png */,
 			);
 			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		080F3D3C160A206F00A80964 /* Classes */ = {
+			isa = PBXGroup;
+			children = (
+				080F3D42160A20C200A80964 /* Vendor.h */,
+				080F3D43160A20C200A80964 /* Vendor.m */,
+			);
+			path = Classes;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -167,6 +184,7 @@
 			files = (
 				080F3D2C160A204B00A80964 /* main.m in Sources */,
 				080F3D30160A204B00A80964 /* VAppDelegate.m in Sources */,
+				080F3D44160A20C200A80964 /* Vendor.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
