@@ -5,27 +5,16 @@
 ## Usage Example:
 ```objectivec
 
-@property (assign, nonatomic)       BOOL isUsingSandbox;
-@property (readonly, nonatomic)     BOOL canMakePurchases;
-@property (copy, nonatomic)         NSArray *products;
-@property (copy, nonatomic)         NSString *sharedSecret;
-
-+ (Vendor *)instance;
-- (void)setErrorHandler:(VendorErrorHandler)errorHandler;
-- (void)requestProductsWithIdentifiers:(NSArray *)identifiers callback:(VendorProducts)callback;
-- (void)addPaymentForProduct:(SKProduct *)product purchasing:(VendorTransactionPurchasing)purchasing purchased:(VendorTransactionPurchased)purchased failed:(VendorTransactionFailed)failed restored:(VendorTransactionRestored)restored;
-- (void)verifyReceiptForTransaction:(SKPaymentTransaction *)transaction callback:(VendorVerifyReceipt)verifyReceipt;
-
-
 NSArray *productIdentifiers = @[
 	@"product_id_one",
 	@"product_id_two",
 	@"product_id_three"
 ];
 
-[[Vendor instance] setIsUsingSandbox:YES];
 if([[Vendor instance] canMakePurchases])
 {
+	[[Vendor instance] setIsUsingSandbox:YES];
+	[[Vendor instance] setSharedSecret:@"111111111111"];
 
 	[[Vendor instance] setErrorHandler:^(NSError *error) {
 		NSLog(@"Vendor Error: %@", error.description);
@@ -51,8 +40,8 @@ if([[Vendor instance] canMakePurchases])
 }
 ```
 ## If you need me
-[Github](http://www.github.com/wess)
-[@WessCope](http://www.twitter.com/wess)
+* [Github](http://www.github.com/wess)
+* [@WessCope](http://www.twitter.com/wess)
 
 ## License
 Read LICENSE file for more info.
