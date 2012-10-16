@@ -41,7 +41,7 @@ if([[Vendor instance] canMakePurchases])
 ```
 ## If you need me
 * [Github](http://www.github.com/wess)
-* [@WessCope](http://www.twitter.com/wess)
+* [@WessCope](http://www.twitter.com/wesscope)
 
 ## License
 Read LICENSE file for more info.
