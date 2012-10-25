@@ -49,12 +49,29 @@ static NSString *encodedStringFromData(NSData *data)
     return [[NSString alloc] initWithData:mutableData encoding:NSASCIIStringEncoding];
 }
 
+/*
+ typedef void(^VendorProducts)(NSArray *products);
+ typedef void(^VendorTransactionPurchasing)(SKPaymentTransaction *transaction);
+ typedef void(^VendorTransactionPurchased)(SKPaymentTransaction *transaction);
+ typedef void(^VendorTransactionFailed)(SKPaymentTransaction *transaction);
+ typedef void(^VendorTransactionRestored)(SKPaymentTransaction *transaction);
+ typedef void(^VendorVerifyReceipt)(NSDictionary *response);
+ typedef void(^VendorErrorHandler)(NSError *error);
+
+ */
 @interface Vendor()
 @property (strong, nonatomic) NSArray               *skProducts;
 @property (strong, nonatomic) NSMutableSet          *productSet;
 @property (strong, nonatomic) SKProductsRequest     *productRequest;
 @property (strong, nonatomic) NSURL                 *requestURL;
-@property (strong, nonatomic) NSMutableDictionary   *callbacks;
+
+@property (copy, nonatomic)   VendorProducts                productsBlock;
+@property (copy, nonatomic)   VendorTransactionPurchasing   transactionPurchasingBlock;
+@property (copy, nonatomic)   VendorTransactionPurchased    transactionPurchasedBlock;
+@property (copy, nonatomic)   VendorTransactionFailed       transactionFailedBlock;
+@property (copy, nonatomic)   VendorTransactionRestored     transactionRestored;
+@property (copy, nonatomic)   VendorVerifyReceipt           verifyReceiptBlock;
+@property (copy, nonatomic)   VendorErrorHandler            errorHandler;
 @end
 
 @implementation Vendor
@@ -90,7 +107,7 @@ static NSString *encodedStringFromData(NSData *data)
 
 - (void)setErrorHandler:(VendorErrorHandler)errorHandler
 {
-    [_callbacks setObject:errorHandler forKey:kVendorErrorCallback];
+    _errorHandler = errorHandler;
 }
 
 - (void)setIsUsingSandbox:(BOOL)isUsingSandbox
@@ -120,24 +137,25 @@ static NSString *encodedStringFromData(NSData *data)
 - (void)requestProductsWithIdentifiers:(NSArray *)identifiers callback:(VendorProducts)callback
 {
     if(callback)
-        [_callbacks setObject:callback forKey:kVendorProductCallbackKey];
+        self.productsBlock = callback;
     
+    [self setProducts:identifiers];
     [_productRequest start];
 }
 
 - (void)addPaymentForProduct:(SKProduct *)product purchasing:(VendorTransactionPurchasing)purchasing purchased:(VendorTransactionPurchased)purchased failed:(VendorTransactionFailed)failed restored:(VendorTransactionRestored)restored
 {
     if(purchasing)
-        [_callbacks setObject:purchasing forKey:kVendorTransactionPurchasingCallback];
+        self.transactionPurchasingBlock = purchasing;
     
     if(purchased)
-        [_callbacks setObject:purchased forKey:kVendorTransactionPurchasedCallback];
+        self.transactionPurchasedBlock = purchased;
     
     if(failed)
-        [_callbacks setObject:failed forKey:kVendorTransactionFailedCallback];
+        self.transactionFailedBlock = failed;
     
     if(restored)
-        [_callbacks setObject:restored forKey:kVendorTransactionRestoredCallback];
+        self.transactionRestored = restored;
     
     SKPayment *payment = [SKPayment paymentWithProduct:product];
     [[SKPaymentQueue defaultQueue] addPayment:payment];
@@ -147,7 +165,7 @@ static NSString *encodedStringFromData(NSData *data)
 - (void)verifyReceiptForTransaction:(SKPaymentTransaction *)transaction callback:(VendorVerifyReceipt)verifyReceipt
 {
     if(verifyReceipt)
-        [_callbacks setObject:verifyReceipt forKey:kVendorVerifyReceiptCallback];
+        self.verifyReceiptBlock = verifyReceipt;
     
     NSString *receipt = encodedStringFromData(transaction.transactionReceipt);
 
@@ -164,8 +182,8 @@ static NSString *encodedStringFromData(NSData *data)
         [NSURLConnection sendAsynchronousRequest:request queue:[NSOperationQueue mainQueue] completionHandler:^(NSURLResponse *response, NSData *data, NSError *error) {
             if(error)
             {
-                if([_callbacks objectForKey:kVendorErrorCallback])
-                    ((VendorErrorHandler)[_callbacks objectForKey:kVendorErrorCallback])(error);
+                if(self.errorHandler)
+                    self.errorHandler(error);
                 else
                     NSLog(@"Vendor Error: %@", error);
                 
@@ -173,8 +191,8 @@ static NSString *encodedStringFromData(NSData *data)
             }
             NSDictionary *result = [NSJSONSerialization JSONObjectWithData:data options:kNilOptions error:nil];
 
-            if([_callbacks objectForKey:kVendorVerifyReceiptCallback])
-                ((VendorVerifyReceipt)[_callbacks objectForKey:kVendorVerifyReceiptCallback])(result);
+            if(self.verifyReceiptBlock)
+                self.verifyReceiptBlock(result);
             
         }];
     }
@@ -183,11 +201,19 @@ static NSString *encodedStringFromData(NSData *data)
 #pragma mark - IAP Delegate Methods -
 -(void)productsRequest:(SKProductsRequest *)request didReceiveResponse:(SKProductsResponse *)response
 {
-    NSAssert(response.products.count > 0, @"No products available");
+    NSLog(@"PRODUCTS: %@", response.products);
+    if(response.products.count < 1)
+    {
+        NSError *error = [NSError errorWithDomain:@"com.WessCope.Vendor" code:204 userInfo:@{@"Products Error": @"There were no products returned"}];
+        if(self.errorHandler)
+            self.errorHandler(error);
+             
+        return;
+    }
     
     _skProducts = [[NSArray alloc] initWithArray:response.products];
-    if([_callbacks objectForKey:kVendorProductCallbackKey])
-        ((VendorProducts)[_callbacks objectForKey:kVendorProductCallbackKey])(_skProducts);
+    if(self.productsBlock)
+        self.productsBlock(_skProducts);
 }
 
 -(void)requestDidFinish:(SKRequest *)request
@@ -199,8 +225,8 @@ static NSString *encodedStringFromData(NSData *data)
 
 -(void)request:(SKRequest *)request didFailWithError:(NSError *)error
 {
-    if([_callbacks objectForKey:kVendorErrorCallback])
-        ((VendorErrorHandler)[_callbacks objectForKey:kVendorErrorCallback])(error);
+    if(self.errorHandler)
+        self.errorHandler(error);
     else
         NSLog(@"Vendor Request Error: %@", error);
 }
@@ -212,23 +238,23 @@ static NSString *encodedStringFromData(NSData *data)
         switch (transaction.transactionState)
         {
             case SKPaymentTransactionStatePurchasing:
-                if([_callbacks objectForKey:kVendorTransactionPurchasingCallback])
-                    ((VendorTransactionPurchasing)[_callbacks objectForKey:kVendorTransactionPurchasingCallback])(transaction);
+                if(self.transactionPurchasingBlock)
+                    self.transactionPurchasingBlock(transaction);
                 break;
 
             case SKPaymentTransactionStatePurchased:
-                if([_callbacks objectForKey:kVendorTransactionPurchasedCallback])
-                    ((VendorTransactionPurchased)[_callbacks objectForKey:kVendorTransactionPurchasedCallback])(transaction);
+                if(self.transactionPurchasedBlock)
+                    self.transactionPurchasedBlock(transaction);
                 break;
 
             case SKPaymentTransactionStateFailed:
-                if([_callbacks objectForKey:kVendorTransactionFailedCallback])
-                    ((VendorTransactionFailed)[_callbacks objectForKey:kVendorTransactionFailedCallback])(transaction);
+                if(self.transactionFailedBlock)
+                    self.transactionFailedBlock(transaction);
                 break;
 
             case SKPaymentTransactionStateRestored:
-                if([_callbacks objectForKey:kVendorTransactionRestoredCallback])
-                    ((VendorTransactionRestored)[_callbacks objectForKey:kVendorTransactionRestoredCallback])(transaction);
+                if(self.transactionRestored)
+                    self.transactionRestored(transaction);
                 break;
 
             default:
